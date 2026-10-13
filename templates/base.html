@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %} University Clinic{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="container nav-wrap">
+        <a class="brand" href="{{ url_for('index') }}">Kakamega University Clinic</a>
+        <nav>
+            <a href="{{ url_for('doctors') }}">Available Doctors</a>
+            {% if session.get('role') == 'patient' %}
+                <a href="{{ url_for('patient_dashboard') }}">My Dashboard</a>
+                <a href="{{ url_for('book_appointment') }}">Book</a>
+            {% elif session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}">Admin</a>
+                <a href="{{ url_for('admin_doctors') }}">Manage Doctors</a>
+                <a href="{{ url_for('admin_patients') }}">Patients</a>
+            {% endif %}
+            {% if session.get('user_id') %}
+                <a class="nav-button" href="{{ url_for('logout') }}">Log out</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Log in</a>
+                <a class="nav-button" href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<main class="container main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alerts">
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</main>
+<footer style="display:none;"></footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

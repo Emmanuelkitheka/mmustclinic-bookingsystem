@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Doctor Dashboard</h2>
+<p>Welcome {{ session.name }}</p>
+{% for appt in appointments %}
+  <p>{{ appt.patient_name }} - {{ appt.appointment_date }} - {{ appt.status }}
+  <a href="/doctor/appointment/{{ appt.appointment_id }}/approve">Approve</a>
+  <a href="/doctor/appointment/{{ appt.appointment_id }}/reject">Reject</a>
+  </p>
+{% else %}
+  <p>No appointments yet.</p>
+{% endfor %}
+{% endblock %}

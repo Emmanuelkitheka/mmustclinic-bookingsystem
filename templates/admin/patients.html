@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Patients{% endblock %}
+{% block content %}
+<div class="section-heading"><p class="eyebrow">Staff management</p><h1>Registered patients</h1></div>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Registered</th></tr></thead><tbody>
+{% for patient in patients %}<tr><td>{{ patient.name }}</td><td>{{ patient.email }}</td><td>{{ patient.phone or 'Not provided' }}</td><td>{{ patient.created_at }}</td></tr>{% else %}<tr><td colspan="4" class="empty">No patients found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

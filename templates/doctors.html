@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Doctors{% endblock %}
+{% block content %}
+<div class="section-heading"><p class="eyebrow">Medical team</p><h1>Available Doctors</h1><p>Choose from our qualified clinic staff.</p></div>
+<div class="doctor-list">
+{% for doctor in doctors %}
+    <article class="doctor-card">
+        <div>
+            <h2>{{ doctor.name }}</h2>
+            <p class="specialty">{{ doctor.specialization or doctor.specialty }}</p>
+            <p>{{ doctor.availability or "Availability set by clinic staff." }}</p>
+        </div>
+        <div class="doctor-meta">
+            <span>{{ doctor.phone or "Clinic contact" }}</span>
+            {% if session.get('role') == 'patient' %}
+<a class="button small primary" href="/appointments/book?doctor_id={{ doctor.doctor_id }}">Book Appointment</a>
+{% endif %}
+        </div>
+    </article>
+{% else %}
+    <div class="empty">No active doctors are currently listed.</div>
+{% endfor %}
+</div>
+{% endblock %}

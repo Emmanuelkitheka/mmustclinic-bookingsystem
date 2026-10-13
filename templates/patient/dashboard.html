@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Patient Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-head">
+    <div><p class="eyebrow">Patient dashboard</p><h1>Welcome, {{ patient.name }}</h1><p>{{ patient.email }}{% if patient.phone %} · {{ patient.phone }}{% endif %}</p></div>
+    <a class="button primary" href="{{ url_for('book_appointment') }}">Book appointment</a>
+</div>
+<section class="section">
+    <div class="section-heading"><h2>Your appointments</h2></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Doctor</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for appointment in appointments %}
+                <tr>
+                    <td>{{ appointment.doctor_name }}<br><small>{{ appointment.specialization }}</small></td>
+                    <td>{{ appointment.appointment_date }}</td>
+                    <td>{{ appointment.appointment_time }}</td>
+                    <td>{{ appointment.reason or "Not provided" }}</td>
+                    <td><span class="status {{ appointment.status|lower }}">{{ appointment.status }}</span></td>
+                    <td>{% if appointment.status in ['Pending', 'Confirmed'] %}<form method="post" action="{{ url_for('cancel_appointment', appointment_id=appointment.appointment_id) }}" onsubmit="return confirm('Cancel this appointment?')"><button class="text-button danger-text">Cancel</button></form>{% else %}—{% endif %}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="empty">You have no appointments yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

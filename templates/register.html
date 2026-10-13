@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="form-page">
+    <form class="form-card" method="post">
+        <div class="section-heading"><p class="eyebrow">Patient account</p><h1>Create your account</h1></div>
+        <label>Full name<input name="name" required maxlength="100"></label>
+        <label>Email<input type="email" name="email" required maxlength="150"></label>
+        <label>Phone<input name="phone" maxlength="30"></label>
+        <label>Password<input type="password" name="password" required minlength="8"><small>Use at least 8 characters.</small></label>
+        <button class="button primary full" type="submit">Register</button>
+    </form>
+</div>
+{% endblock %}

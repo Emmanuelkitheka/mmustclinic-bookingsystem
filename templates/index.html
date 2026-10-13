@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Home | Kakamega University Clinic{% endblock %}
+{% block content %}
+<section class="hero">
+    <div>
+        <p class="eyebrow">Clinic Appointment System</p>
+        <h1>Book and manage clinic appointments online.</h1>
+        <p class="hero-copy">Patients can find doctors, request appointments and track their status. Authorized clinic staff can manage doctors and appointments.</p>
+        <div class="actions">
+            <a class="button primary" href="{{ url_for('book_appointment') if session.get('role') == 'patient' else url_for('register') }}">Get started</a>
+            <a class="button secondary" href="{{ url_for('doctors') }}">View doctors</a>
+        </div>
+    </div>
+    <div class="hero-panel">
+        <div class="panel-row"><span>Clinic</span><strong>University Health Centre</strong></div>
+        <div class="panel-row"><span>Hours</span><strong>Mon Fri, 8:00 17:00</strong></div>
+        <div class="panel-row"><span>Location</span><strong>Kakamega, Kenya</strong></div>
+    </div>
+</section>
+<section class="section">
+    <div class="section-heading">
+        <p class="eyebrow">System features</p>
+        <h2>Designed for the main clinic workflow</h2>
+    </div>
+    <div class="feature-grid">
+        <article><h3>Patient accounts</h3><p>Register, log in, view your profile and manage your appointment requests.</p></article>
+        <article><h3>Doctor directory</h3><p>See active doctors, specialties, contact information and availability.</p></article>
+        <article><h3>Staff management</h3><p>Authorized staff can update doctor records and process appointments.</p></article>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Book Appointment{% endblock %}
+{% block content %}
+<div class="form-page wide">
+<form class="form-card" method="post">
+    <div class="section-heading"><p class="eyebrow">Appointment request</p><h1>Book an appointment</h1><p>Select an active doctor, date and time. The request starts as Pending.</p></div>
+    <label>Doctor
+        <select name="doctor_id" required>
+            <option value="">Select a doctor</option>
+            {% for doctor in doctors %}<option value="{{ doctor.doctor_id }}">{{ doctor.name }} — {{ doctor.specialty }}</option>{% endfor %}
+        </select>
+    </label>
+    <div class="two-col">
+        <label>Date<input type="date" name="appointment_date" required></label>
+        <label>Time<input type="time" name="appointment_time" required></label>
+    </div>
+    <label>Reason for visit<textarea name="reason" rows="4" maxlength="500" placeholder="Briefly describe the reason for the visit"></textarea></label>
+    <button class="button primary full" type="submit">Submit appointment request</button>
+</form>
+</div>
+{% endblock %}

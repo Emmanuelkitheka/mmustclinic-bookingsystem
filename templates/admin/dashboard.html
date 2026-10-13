@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-head"><div><p class="eyebrow">Staff area</p><h1>Clinic administration</h1><p>Manage doctors, patients and appointment status.</p></div></div>
+<div class="stats">
+    <div><span>Patients</span><strong>{{ patient_count }}</strong></div>
+    <div><span>Doctors</span><strong>{{ doctor_count }}</strong></div>
+    <div><span>Appointments</span><strong>{{ appointment_count }}</strong></div>
+</div>
+<section class="section">
+<div class="section-heading"><h2>Appointments</h2></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>Update</th></tr></thead>
+<tbody>
+{% for a in appointments %}
+<tr>
+<td>{{ a.patient_name }}</td><td>{{ a.doctor_name }}</td><td>{{ a.appointment_date }}</td><td>{{ a.appointment_time }}</td>
+<td><span class="status {{ a.status|lower }}">{{ a.status }}</span></td>
+<td>
+<form method="post" action="{{ url_for('update_appointment_status', appointment_id=a.appointment_id) }}" class="inline-form">
+<select name="status"><option {% if a.status == 'Pending' %}selected{% endif %}>Pending</option><option {% if a.status == 'Confirmed' %}selected{% endif %}>Confirmed</option><option {% if a.status == 'Completed' %}selected{% endif %}>Completed</option><option {% if a.status == 'Cancelled' %}selected{% endif %}>Cancelled</option></select>
+<button class="button small primary" type="submit">Save</button>
+</form>
+</td>
+</tr>
+{% else %}<tr><td colspan="6" class="empty">No appointments found.</td></tr>{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+{% endblock %}

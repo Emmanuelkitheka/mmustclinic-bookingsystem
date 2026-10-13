@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Manage Doctors{% endblock %}
+{% block content %}
+<div class="section-heading"><p class="eyebrow">Staff management</p><h1>Doctors</h1></div>
+<div class="admin-grid">
+<form class="form-card" method="post">
+<h2>Add doctor</h2>
+<label>Name<input name="name" required maxlength="100"></label>
+<label>Email<input name="email" type="email" required maxlength="100" placeholder="dr.john@mmust.ac.ke"></label>
+<label>Password<input name="password" type="password" required maxlength="100" placeholder="e.g. Doctor@123"></label>
+<label>Specialization<input name="specialization" required maxlength="100"></label>
+<label>Phone<input name="phone" maxlength="30"></label>
+<label>Availability<input name="availability" placeholder="Mon-Fri, 8:00-16:00"></label>
+<button class="button primary full" type="submit">Add doctor</button>
+</form>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Doctor</th><th>Specialization</th><th>Availability</th><th>Status</th><th>Action</th></tr></thead>
+<tbody>
+{% for doctor in doctors %}
+<tr>
+<td>{{ doctor.name }}</td>
+<td>{{ doctor.specialization }}</td>
+<td>{{ doctor.availability }}</td>
+<td>{{ doctor.status }}</td>
+<td>
+<a href="/admin/edit_doctor/{{ doctor.doctor_id }}" style="background:lightskyblue; color:black; padding:5px 8px; border-radius:4px; text-decoration:none;">Edit Time</a>
+{% if doctor.status == 'active' %}
+<a href="/admin/deactivate_doctor/{{ doctor.doctor_id }}" onclick="return confirm('Deactivate this doctor?')" style="background:#c10e14; color:white; padding:5px 8px; border-radius:4px; text-decoration:none;">Deactivate</a>
+{% else %}
+<a href="/admin/activate_doctor/{{ doctor.doctor_id }}" style="background:rgb(219, 94, 107); color:white; padding:5px 8px; border-radius:4px; text-decoration:none;">Activate</a>
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

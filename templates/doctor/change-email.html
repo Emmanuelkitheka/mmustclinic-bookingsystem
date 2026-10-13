@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width:500px; margin-top:30px;">
+  <h3>Change Email</h3>
+  <p>Current Email: <b>{{ current_email }}</b></p>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST">
+    <div class="mb-3">
+      <label>New Email</label>
+      <input type="email" name="new_email" class="form-control" required value="{{ current_email }}">
+    </div>
+    <div class="mb-3">
+      <label>Enter Current Password to Confirm</label>
+      <input type="password" name="password" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Update Email</button>
+  </form>
+  <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}
