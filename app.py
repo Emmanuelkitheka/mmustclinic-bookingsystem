@@ -177,18 +177,20 @@ def patient_dashboard():
     db = get_db()
     cursor = db.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT patient_id FROM patients WHERE user_id = %s", (session["user_id"],))
+        cursor.execute("SELECT user_id FROM patients WHERE user_id = %s", (session["user_id"],))
         prow = cursor.fetchone()
         if prow:
-            real_patient_id = prow['patient_id']
+            real_patient_id = prow['user_id']
         else:
             real_patient_id = session["user_id"]
+            cursor.execute("INSERT IGNORE INTO patients (user_id) VALUES (%s)", (real_patient_id,))
+            db.commit()
 
         cursor.execute("""
-    SELECT p.patient_id, u.name, u.email, p.phone 
-    FROM patients p 
-    JOIN users u ON p.user_id = u.user_id 
-    WHERE p.patient_id = %s
+SELECT p.user_id as patient_id, u.name, u.email, p.phone
+FROM patients p
+JOIN users u ON p.user_id = u.user_id
+WHERE p.user_id = %s
 """, (real_patient_id,))
         patient = cursor.fetchone()
 
