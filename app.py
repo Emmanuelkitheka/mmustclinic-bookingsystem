@@ -100,9 +100,11 @@ def register():
             db.commit()
             flash("Registration successful. You can now log in.", "success")
             return redirect(url_for("login"))
-        except mysql.connector.Error:
-            db.rollback()
-            flash("Registration could not be completed. Please try again.", "danger")
+        except Exception as e:
+             db.rollback()
+             print(f"REGISTER ERROR: {e}")
+             import traceback; traceback.print_exc()
+             flash(f"Error: {e}", "danger")
         finally:
             cursor.close()
             db.close()
@@ -483,11 +485,9 @@ def doctor_change_password():
                 return redirect(url_for('doctor_change_password'))
 
             stored_password = user['password_hash']
-
-            # Check if password is correct - supports both plain and hashed
             password_is_correct = False
             
-            # Try 1: Check hashed password
+            
             try:
                 from werkzeug.security import check_password_hash
                 if check_password_hash(stored_password, current):
@@ -495,7 +495,6 @@ def doctor_change_password():
             except:
                 pass
             
-            # Try 2: Check plain text (if you saved it plain before)
             if stored_password == current:
                 password_is_correct = True
 
@@ -503,7 +502,7 @@ def doctor_change_password():
                 flash("Current password is wrong!", "danger")
                 return redirect(url_for('doctor_change_password'))
 
-            # Save new password correctly hashed
+            
             from werkzeug.security import generate_password_hash
             new_hash = generate_password_hash(new)
             cursor.execute("UPDATE users SET password_hash = %s WHERE user_id = %s", (new_hash, doctor_id))
