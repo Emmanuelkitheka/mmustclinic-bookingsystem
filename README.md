@@ -1,22 +1,41 @@
-# Clinic Appointment Booking System
+# MMUST Clinic Booking System - Masinde Muliro University
 
-A university Computer Science project built with Python Flask, MySQL, Jinja2, HTML, CSS and JavaScript.
+A web-based clinic appointment booking system for Masinde Muliro University of Science and Technology (MMUST), Kakamega.
 
-The application supports patient registration and login, doctor browsing, appointment booking, patient appointment management, and an authorized admin/staff area for managing doctors, patients and appointment statuses.
+Developed to digitize student and staff access to university health services, reducing queues and improving doctor-patient management.
 
-## Technologies
+**Repository:** https://github.com/Emmanuelkitheka/mmustclinic-bookingsystem
+
+### ✨ Features
+
+**For Patients (Students/Staff):**
+- Secure Registration & Login
+- Browse Active Doctors
+- Book Clinic Appointments (Date, Time, Reason)
+- Patient Dashboard - View & Cancel Appointments
+- Password Security with Hashing
+
+**For Doctors:**
+- Managed via Admin Panel
+- Specialization, Availability, Contact Management
+
+**For Admin/Staff:**
+- Admin Dashboard
+- Add / Deactivate Doctors
+- View All Registered Patients
+- Review & Update Appointment Status (Pending, Confirmed, Completed, Cancelled)
+- Admin Account Created via `create_admin.py`
+
+### 🛠️ Technologies
 
 - Python 3.10+
-- Flask
-- Jinja2
-- MySQL
-- mysql-connector-python
-- HTML5
-- CSS3
-- JavaScript
-- Werkzeug password hashing
+- Flask (Backend Framework)
+- Jinja2 (Templates)
+- MySQL + mysql-connector-python
+- HTML5, CSS3, JavaScript
+- Werkzeug Password Hashing
 
-## Project structure
+### 📁 Project Structure
 
 ```text
 clinic_booking_system/
@@ -24,7 +43,8 @@ clinic_booking_system/
 ├── config.py
 ├── create_admin.py
 ├── requirements.txt
-├── .env
+├── .env.example
+├── .gitignore
 ├── README.md
 ├── database/
 │   └── schema.sql
@@ -35,6 +55,8 @@ clinic_booking_system/
 │   ├── register.html
 │   ├── doctors.html
 │   ├── error.html
+│   ├── forgot_password.html
+│   ├── reset_password.html
 │   ├── patient/
 │   │   ├── dashboard.html
 │   │   └── book_appointment.html
@@ -47,7 +69,6 @@ clinic_booking_system/
     │   └── style.css
     └── js/
         └── script.js
-```
 
 ### Main files
 
@@ -214,3 +235,5 @@ The project intentionally keeps the Flask architecture straightforward. Routes d
 - how database foreign keys connect users, patients, doctors and appointments.
 
 This makes the project suitable for studying Flask before introducing larger application architectures.
+## Author
+Emmanuel Kitheka - Mmust Computer Science -Kakamega,Kenya
