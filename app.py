@@ -683,5 +683,7 @@ def reset_password(token):
         flash("Password reset successful! Login now", "success")
         return redirect(url_for('login'))
     return render_template('reset_password.html')
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
