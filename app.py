@@ -152,11 +152,21 @@ def doctors():
     db = get_db()
     cursor = db.cursor(dictionary=True)
     try:
-        cursor.execute(
-            "SELECT doctor_id, name, specialization, phone, availability, status "
-            "FROM doctors WHERE status = 'Active' ORDER BY name"
-        )
-        doctor_rows = cursor.fetchall()
+        try:
+            cursor.execute(
+                "SELECT doctor_id, name, specialization, phone, availability, status "
+                "FROM doctors WHERE status = 'Active' ORDER BY name"
+            )
+            doctor_rows = cursor.fetchall()
+        except Exception:
+            db.rollback()
+            cursor.execute(
+                "SELECT d.doctor_id, u.full_name as name, d.specialization, "
+                "COALESCE(d.phone, u.phone) as phone, d.availability, d.status "
+                "FROM doctors d JOIN users u ON d.user_id = u.user_id "
+                "WHERE d.status = 'Active' ORDER BY u.full_name"
+            )
+            doctor_rows = cursor.fetchall()
     finally:
         cursor.close()
         db.close()
@@ -348,16 +358,42 @@ def admin_doctors():
             if not name or not specialization:
                 flash("Doctor name and specialization are required.", "danger")
             else:
-                cursor.execute(
-                    """INSERT INTO doctors (name, specialization, phone, availability, status)
-                       VALUES (%s, %s, %s, %s, 'Active')""",
-                    (name, specialization, phone or None, availability or None),
-                )
-                db.commit()
-                flash("Doctor added.", "success")
+                try:
+                    cursor.execute(
+                        """INSERT INTO doctors (name, specialization, phone, availability, status)
+                           VALUES (%s, %s, %s, %s, 'Active')""",
+                        (name, specialization, phone or None, availability or None),
+                    )
+                    db.commit()
+                    flash("Doctor added.", "success")
+                except Exception as e:
+                    db.rollback()
+                    try:
+                        cursor.execute(
+                            "INSERT INTO users (full_name, email, password_hash, role, phone) VALUES (%s, %s, %s, 'doctor', %s)",
+                            (name, f"doctor_{int(__import__('time').time())}@clinic.local", "temp_hash", phone or None),
+                        )
+                        user_id = cursor.lastrowid
+                        cursor.execute(
+                            "INSERT INTO doctors (user_id, specialization, availability, status) VALUES (%s, %s, %s, 'Active')",
+                            (user_id, specialization, availability or None),
+                        )
+                        db.commit()
+                        flash("Doctor added (linked to user).", "success")
+                    except Exception as e2:
+                        db.rollback()
+                        flash(f"Failed to add doctor: {e2}", "danger")
 
-        cursor.execute("SELECT * FROM doctors ORDER BY name")
-        doctors_rows = cursor.fetchall()
+        try:
+            cursor.execute("SELECT * FROM doctors ORDER BY doctor_id DESC")
+            doctors_rows = cursor.fetchall()
+        except Exception:
+            db.rollback()
+            cursor.execute(
+                "SELECT d.doctor_id, u.full_name as name, d.specialization, COALESCE(d.phone, u.phone) as phone, d.availability, d.status "
+                "FROM doctors d JOIN users u ON d.user_id = u.user_id ORDER BY d.doctor_id DESC"
+            )
+            doctors_rows = cursor.fetchall()
     finally:
         cursor.close()
         db.close()
@@ -444,7 +480,7 @@ def doctor_dashboard():
     cursor = db.cursor(dictionary=True)
     try:
         cursor.execute("""
-            SELECT a.appointment_id, a.appointment_date, a.status, u.name as patient_name
+            SELECT a.appointment_id, a.appointment_date, a.status, u.full_name as patient_name
             FROM appointments a
             JOIN users u ON a.patient_id = u.user_id
             WHERE a.doctor_id = %s
