@@ -737,6 +737,23 @@ def reset_password(token):
         flash("Password reset successful! Login now", "success")
         return redirect(url_for('login'))
     return render_template('reset_password.html')
+
+@app.route("/debug-schema")
+def debug_schema():
+    db = get_db()
+    cursor = db.cursor()
+    out = {}
+    try:
+        cursor.execute("SHOW COLUMNS FROM users")
+        out['users'] = cursor.fetchall()
+        cursor.execute("SHOW COLUMNS FROM doctors")
+        out['doctors'] = cursor.fetchall()
+    except Exception as e:
+        out['error'] = str(e)
+    finally:
+        cursor.close()
+        db.close()
+    return out    
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5000))
