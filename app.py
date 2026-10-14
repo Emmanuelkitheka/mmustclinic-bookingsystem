@@ -314,13 +314,14 @@ def admin_dashboard():
         cursor.execute("SELECT COUNT(*) AS total FROM appointments")
         appointment_count = cursor.fetchone()["total"]
         cursor.execute(
-            """SELECT a.appointment_id, p.name AS patient_name, d.name AS doctor_name,
-                      a.appointment_date, a.appointment_time, a.status
-               FROM appointments a
-               JOIN patients pt ON a.patient_id = pt.user_id
-               JOIN users p ON pt.user_id = p.user_id
-               JOIN doctors d ON a.doctor_id = d.doctor_id
-               ORDER BY a.appointment_date DESC, a.appointment_time DESC"""
+            """SELECT a.appointment_id, p.name AS patient_name, du.name AS doctor_name,
+                    a.appointment_date, a.appointment_time, a.status
+            FROM appointments a
+            JOIN patients pt ON a.patient_id = pt.user_id
+            JOIN users p ON pt.user_id = p.user_id
+            JOIN doctors d ON a.doctor_id = d.doctor_id
+            JOIN users du ON d.user_id = du.user_id
+            ORDER BY a.appointment_date DESC, a.appointment_time DESC"""
         )
         appointments = cursor.fetchall()
     finally:
