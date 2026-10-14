@@ -355,6 +355,9 @@ def admin_doctors():
             specialization = request.form.get("specialization", "").strip()
             phone = request.form.get("phone", "").strip()
             availability = request.form.get("availability", "").strip()
+            email = request.form.get("email", "").strip() or f"doctor_{int(__import__('time').time())}@clinic.local"
+            password = request.form.get("password", "").strip() or "doctor123"
+
             if not name or not specialization:
                 flash("Doctor name and specialization are required.", "danger")
             else:
@@ -366,34 +369,50 @@ def admin_doctors():
                     )
                     db.commit()
                     flash("Doctor added.", "success")
-                except Exception as e:
+                except Exception:
                     db.rollback()
-                    try:
-                        cursor.execute(
-                            "INSERT INTO users (full_name, email, password_hash, role, phone) VALUES (%s, %s, %s, 'doctor', %s)",
-                            (name, f"doctor_{int(__import__('time').time())}@clinic.local", "temp_hash", phone or None),
-                        )
-                        user_id = cursor.lastrowid
-                        cursor.execute(
-                            "INSERT INTO doctors (user_id, specialization, availability, status) VALUES (%s, %s, %s, 'Active')",
-                            (user_id, specialization, availability or None),
-                        )
-                        db.commit()
-                        flash("Doctor added (linked to user).", "success")
-                    except Exception as e2:
-                        db.rollback()
-                        flash(f"Failed to add doctor: {e2}", "danger")
+                    inserted = False
+                    for user_col in ["full_name", "name", "username"]:
+                        try:
+                            cursor.execute(
+                                f"INSERT INTO users ({user_col}, email, password_hash, role, phone) VALUES (%s, %s, %s, 'doctor', %s)",
+                                (name, email, password, phone or None),
+                            )
+                            user_id = cursor.lastrowid
+                            cursor.execute(
+                                "INSERT INTO doctors (user_id, specialization, availability, status) VALUES (%s, %s, %s, 'Active')",
+                                (user_id, specialization, availability or None),
+                            )
+                            db.commit()
+                            flash(f"Doctor added (users.{user_col}).", "success")
+                            inserted = True
+                            break
+                        except Exception as e_inner:
+                            db.rollback()
+                            last_err = e_inner
+                            continue
+                    if not inserted:
+                        flash(f"Failed to add doctor: {last_err}", "danger")
+
 
         try:
             cursor.execute("SELECT * FROM doctors ORDER BY doctor_id DESC")
             doctors_rows = cursor.fetchall()
         except Exception:
             db.rollback()
-            cursor.execute(
-                "SELECT d.doctor_id, u.full_name as name, d.specialization, COALESCE(d.phone, u.phone) as phone, d.availability, d.status "
-                "FROM doctors d JOIN users u ON d.user_id = u.user_id ORDER BY d.doctor_id DESC"
-            )
-            doctors_rows = cursor.fetchall()
+            try:
+                cursor.execute(
+                    "SELECT d.doctor_id, u.full_name as name, d.specialization, COALESCE(d.phone, u.phone) as phone, d.availability, d.status "
+                    "FROM doctors d JOIN users u ON d.user_id = u.user_id ORDER BY d.doctor_id DESC"
+                )
+                doctors_rows = cursor.fetchall()
+            except Exception:
+                db.rollback()
+                cursor.execute(
+                    "SELECT d.doctor_id, u.name as name, d.specialization, COALESCE(d.phone, u.phone) as phone, d.availability, d.status "
+                    "FROM doctors d JOIN users u ON d.user_id = u.user_id ORDER BY d.doctor_id DESC"
+                )
+                doctors_rows = cursor.fetchall()
     finally:
         cursor.close()
         db.close()
