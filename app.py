@@ -331,6 +331,21 @@ def admin_dashboard():
         appointment_count=appointment_count,
         appointments=appointments,
     )
+@app.route("/fix-my-admin/<secret>")
+def fix_my_admin(secret):
+    if secret != "mmust123":
+        return "Forbidden", 403
+    db = get_db()
+    cur = db.cursor()
+    try:
+        cur.execute("UPDATE users SET role='admin' WHERE email='admin@clinic.ac.ke'")
+        db.commit()
+        cur.execute("SELECT user_id, email, role FROM users WHERE email='admin@clinic.ac.ke'")
+        user = cur.fetchone()
+        return f"Fixed! Now: {user}"
+    finally:
+        cur.close()
+        db.close()    
 
 
 @app.route("/admin/doctors", methods=["GET", "POST"])
