@@ -203,12 +203,13 @@ WHERE p.user_id = %s
         }
 
         cursor.execute("""
-        SELECT a.*, d.name as doctor_name, d.specialization
+        SELECT a.*, u.name as doctor_name, d.specialization
         FROM appointments a
         JOIN doctors d ON a.doctor_id = d.doctor_id
+        JOIN users u ON d.user_id = u.user_id
         WHERE a.patient_id = %s
         ORDER BY a.appointment_date DESC
-    """, (real_patient_id,))
+        """, (real_patient_id,))
         appointments = cursor.fetchall()
         
         return render_template("patient/dashboard.html", appointments=appointments, patient=patient)
