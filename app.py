@@ -113,7 +113,6 @@ def register():
 
 
 @app.route("/login", methods=["GET", "POST"])
-@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"].strip()
@@ -127,17 +126,13 @@ def login():
                 session["user_id"] = user["user_id"]
                 session["role"] = user["role"]
                 session["username"] = user["name"]
-                session["email"] =["email"]
-                if user["role"] == "admin":
+                session["email"] = user["email"]
+                if str(user["role"]).strip().lower() == "admin":
                     return redirect(url_for("admin_dashboard"))
-                return redirect(url_for("patient_dashboard"))
-            cursor.execute("SELECT * FROM doctors WHERE email = %s", (email,))
-            doctor = cursor.fetchone()
-            if doctor and doctor["password"] and check_password_hash(doctor["password"], password):
-                session["user_id"] = doctor["doctor_id"]
-                session["role"] = "doctor"
-                session["name"] = doctor["name"]
-                return redirect(url_for("doctor_dashboard"))
+                elif str(user["role"]).strip().lower() == "doctor":
+                    return redirect(url_for("doctor_dashboard"))
+                else:
+                    return redirect(url_for("patient_dashboard"))
         finally:
             cursor.close()
             db.close()
