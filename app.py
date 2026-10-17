@@ -262,7 +262,7 @@ def book_appointment():
         db.commit()
         cursor.close()
         db.close()
-        return redirect(url_for('patient_dashboard'))
+        return redirect(url_for('dashboard'))
 
     doctor_id = request.args.get('doctor_id')
     
