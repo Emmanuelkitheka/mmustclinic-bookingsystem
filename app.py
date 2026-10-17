@@ -248,11 +248,11 @@ def book_appointment():
     if request.method == 'POST':
         doctor_id = request.form.get('doctor_id')
         appointment_date = request.form.get('appointment_date')
-        appointment_time = request.form.get('appointment_time')
+        appointment_time = request.form.get('appointment_time') or '09:00:00'
         reason = request.form.get('reason')
         patient_id = session.get('user_id')
 
-        if appointment_time and len(appointment_time) == 5:
+        if len(appointment_time) == 5:
             appointment_time = appointment_time + ":00"
 
         cursor.execute(
@@ -267,18 +267,17 @@ def book_appointment():
     doctor_id = request.args.get('doctor_id')
     
     cursor.execute("""
-        SELECT d.doctor_id, d.specialization, u.full_name, u.email
+        SELECT d.doctor_id, d.specialization, u.name AS full_name, u.email
         FROM doctors d
-        JOIN users u ON d.user_id = u.id
-        WHERE u.is_active = 1
+        JOIN users u ON d.user_id = u.user_id
     """)
     doctors = cursor.fetchall()
     
     if doctor_id:
         cursor.execute("""
-            SELECT d.doctor_id, d.specialization, u.full_name 
+            SELECT d.doctor_id, d.specialization, u.name AS full_name
             FROM doctors d 
-            JOIN users u ON d.user_id = u.id 
+            JOIN users u ON d.user_id = u.user_id 
             WHERE d.doctor_id = %s
         """, (doctor_id,))
         doctor = cursor.fetchone()
@@ -772,13 +771,7 @@ def debug_schema():
         cursor.close()
         db.close()
     return out
-@app.route("/check_columns")
-def check_columns():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SHOW COLUMNS FROM users")
-    cols = cursor.fetchall()
-    return str(cols)        
+      
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5000))
