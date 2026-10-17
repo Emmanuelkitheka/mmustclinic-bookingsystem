@@ -273,7 +273,7 @@ def book_appointment():
 
     cursor.close()
     
-    return render_template("book_appointment.html", doctor=doctor, doctors=doctors, selected_doctor_id=doctor_id)
+    return render_template("patient/book_appointment.html", doctor=doctor, doctors=doctors, selected_doctor_id=doctor_id)
 
 @app.post("/appointments/<int:appointment_id>/cancel")
 @role_required("patient")

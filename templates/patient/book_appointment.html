@@ -7,7 +7,7 @@
     <label>Doctor
         <select name="doctor_id" required>
             <option value="">Select a doctor</option>
-            {% for doctor in doctors %}<option value="{{ doctor.doctor_id }}">{{ doctor.name }} — {{ doctor.specialty }}</option>{% endfor %}
+            {% for doctor in doctors %}<option value="{{ doctor.doctor_id }}">{{ doctor.full_name }} — {{ doctor.specialization }}</option>{% endfor %}
         </select>
     </label>
     <div class="two-col">
