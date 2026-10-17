@@ -411,14 +411,22 @@ def toggle_doctor(doctor_id):
     db = get_db()
     cursor = db.cursor()
     try:
-        cursor.execute(
-            """UPDATE doctors
-               SET status = CASE WHEN status = 'Active' THEN 'Inactive' ELSE 'Active' END
-               WHERE doctor_id = %s""",
-            (doctor_id,),
-        )
-        db.commit()
-        flash("Doctor status updated.", "success")
+        cursor.execute("SELECT status FROM doctors WHERE doctor_id=%s", (doctor_id,))
+        row = cursor.fetchone()
+        if row:
+            current = row[0] if isinstance(row, tuple) else row['status']
+            new_status = 'Inactive' if str(current).lower() == 'active' else 'Active'
+            cursor.execute(
+                "UPDATE doctors SET status=%s WHERE doctor_id=%s",
+                (new_status, doctor_id),
+            )
+            db.commit()
+            flash(f"Doctor status updated to {new_status}.", "success")
+        else:
+            flash("Doctor not found.", "danger")
+    except Exception as e:
+        db.rollback()
+        flash(f"Failed to toggle: {e}", "danger")
     finally:
         cursor.close()
         db.close()
@@ -643,25 +651,37 @@ def add_doctor():
     return render_template('admin_add_doctor.html')
 
 @app.route('/admin/deactivate_doctor/<int:doctor_id>')
+@role_required("admin")
 def deactivate_doctor(doctor_id):
     db = get_db()
     cur = db.cursor()
-    cur.execute("UPDATE doctors SET is_active = 0, availability = 'Transferred' WHERE doctor_id = %s", (doctor_id,))
-    db.commit()
-    cur.close()
-    db.close()
-    flash('Doctor deactivated - transferred')
+    try:
+        cur.execute("UPDATE doctors SET status = 'Inactive', availability = 'Transferred' WHERE doctor_id = %s", (doctor_id,))
+        db.commit()
+        flash('Doctor deactivated - transferred')
+    except Exception as e:
+        db.rollback()
+        flash(f'Failed to deactivate: {e}', 'danger')
+    finally:
+        cur.close()
+        db.close()
     return redirect('/admin/doctors')
 
 @app.route('/admin/activate_doctor/<int:doctor_id>')
+@role_required("admin")
 def activate_doctor(doctor_id):
     db = get_db()
     cur = db.cursor()
-    cur.execute("UPDATE doctors SET is_active = 1, availability = 'Available' WHERE doctor_id = %s", (doctor_id,))
-    db.commit()
-    cur.close()
-    db.close()
-    flash('Doctor reactivated')
+    try:
+        cur.execute("UPDATE doctors SET status = 'Active', availability = 'Available' WHERE doctor_id = %s", (doctor_id,))
+        db.commit()
+        flash('Doctor reactivated')
+    except Exception as e:
+        db.rollback()
+        flash(f'Failed to activate: {e}', 'danger')
+    finally:
+        cur.close()
+        db.close()
     return redirect('/admin/doctors')
 @app.route('/admin/edit_doctor/<int:doctor_id>', methods=['GET','POST'])
 def edit_doctor(doctor_id):
@@ -679,7 +699,6 @@ def edit_doctor(doctor_id):
     cur.close()
     db.close()
     return render_template('admin/edit_doctor.html', doctor=doctor)
-# --- FORGOT PASSWORD ---
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
