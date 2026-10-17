@@ -248,39 +248,47 @@ def book_appointment():
     if request.method == 'POST':
         doctor_id = request.form.get('doctor_id')
         appointment_date = request.form.get('appointment_date')
+        appointment_time = request.form.get('appointment_time')
         reason = request.form.get('reason')
         patient_id = session.get('user_id')
 
-        if 'T' in appointment_date:
-            appt_date, appt_time = appointment_date.split('T')
-        else:
-            appt_date = appointment_date
-            appt_time = '09:00:00'
+        if appointment_time and len(appointment_time) == 5:
+            appointment_time = appointment_time + ":00"
 
         cursor.execute(
             "INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, reason, status) VALUES (%s, %s, %s, %s, %s, 'Pending')",
-            (patient_id, doctor_id, appt_date, appt_time, reason)
+            (patient_id, doctor_id, appointment_date, appointment_time, reason)
         )
         db.commit()
         cursor.close()
-        return redirect(url_for('dashboard'))
+        db.close()
+        return redirect(url_for('patient_dashboard'))
 
     doctor_id = request.args.get('doctor_id')
     
+    cursor.execute("""
+        SELECT d.doctor_id, d.specialization, u.full_name, u.email
+        FROM doctors d
+        JOIN users u ON d.user_id = u.id
+        WHERE u.is_active = 1
+    """)
+    doctors = cursor.fetchall()
+    
     if doctor_id:
-        cursor.execute("SELECT * FROM doctors WHERE doctor_id = %s", (doctor_id,))
+        cursor.execute("""
+            SELECT d.doctor_id, d.specialization, u.full_name 
+            FROM doctors d 
+            JOIN users u ON d.user_id = u.id 
+            WHERE d.doctor_id = %s
+        """, (doctor_id,))
         doctor = cursor.fetchone()
-        cursor.execute("SELECT * FROM doctors")
-        doctors = cursor.fetchall()
     else:
-        cursor.execute("SELECT * FROM doctors")
-        doctors = cursor.fetchall()
         doctor = doctors[0] if doctors else None
 
     cursor.close()
+    db.close()
     
     return render_template("patient/book_appointment.html", doctor=doctor, doctors=doctors, selected_doctor_id=doctor_id)
-
 @app.post("/appointments/<int:appointment_id>/cancel")
 @role_required("patient")
 def cancel_appointment(appointment_id):
