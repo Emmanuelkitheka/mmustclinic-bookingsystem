@@ -13,8 +13,10 @@
         <div class="doctor-meta">
             <span>{{ doctor.phone or "Clinic contact" }}</span>
             {% if session.get('role') == 'patient' %}
-<a class="button small primary" href="/appointments/book?doctor_id={{ doctor.doctor_id }}">Book Appointment</a>
-{% endif %}
+            <a class="button small primary" href="/appointments/book?doctor_id={{ doctor.doctor_id }}">Book Appointment</a>
+            {% else %}
+            <a class="button small primary" href="/login">Login to Book</a>
+            {% endif %}
         </div>
     </article>
 {% else %}
