@@ -251,9 +251,15 @@ def book_appointment():
         reason = request.form.get('reason')
         patient_id = session.get('user_id')
 
+        if 'T' in appointment_date:
+            appt_date, appt_time = appointment_date.split('T')
+        else:
+            appt_date = appointment_date
+            appt_time = '09:00:00'  # default time if only date given
+
         cursor.execute(
-            "INSERT INTO appointments (patient_id, doctor_id, appointment_date, reason, status) VALUES (%s, %s, %s, %s, 'Pending')",
-            (patient_id, doctor_id, appointment_date, reason)
+            "INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, reason, status) VALUES (%s, %s, %s, %s, %s, 'Pending')",
+            (patient_id, doctor_id, appt_date, appt_time, reason)
         )
         db.commit()
         cursor.close()
