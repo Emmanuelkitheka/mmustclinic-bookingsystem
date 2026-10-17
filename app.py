@@ -683,22 +683,33 @@ def activate_doctor(doctor_id):
         cur.close()
         db.close()
     return redirect('/admin/doctors')
-@app.route('/admin/edit_doctor/<int:doctor_id>', methods=['GET','POST'])
+@app.route('/admin/edit_doctor/<int:doctor_id>', methods=['GET', 'POST'])
+@role_required("admin")
 def edit_doctor(doctor_id):
     db = get_db()
     cur = db.cursor(dictionary=True)
-    if request.method == 'POST':
-        new_time = request.form['availability']
-        cur.execute("UPDATE doctors SET availability = %s WHERE doctor_id = %s", (new_time, doctor_id))
-        db.commit()
+    try:
+        if request.method == 'POST':
+            new_time = request.form.get('availability', '').strip()
+            if new_time:
+                cur.execute("UPDATE doctors SET availability = %s WHERE doctor_id = %s", (new_time, doctor_id))
+                db.commit()
+                flash('Availability updated', 'success')
+            return redirect('/admin/doctors')
+
+        cur.execute("SELECT d.doctor_id, d.availability, d.status, d.specialization, d.phone, u.name FROM doctors d JOIN users u ON d.user_id = u.user_id WHERE d.doctor_id = %s", (doctor_id,))
+        doctor = cur.fetchone()
+        if not doctor:
+            flash('Doctor not found', 'danger')
+            return redirect('/admin/doctors')
+        return render_template('admin/edit_doctor.html', doctor=doctor)
+    except Exception as e:
+        db.rollback()
+        flash(f'Failed: {e}', 'danger')
+        return redirect('/admin/doctors')
+    finally:
         cur.close()
         db.close()
-        return redirect('/admin/doctors')
-    cur.execute("SELECT * FROM doctors WHERE doctor_id = %s", (doctor_id,))
-    doctor = cur.fetchone()
-    cur.close()
-    db.close()
-    return render_template('admin/edit_doctor.html', doctor=doctor)
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
