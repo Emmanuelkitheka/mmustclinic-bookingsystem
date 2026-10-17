@@ -237,15 +237,29 @@ WHERE p.user_id = %s
         db.close()
 
 
-@app.route("/appointments/book")
+@app.route("/appointments/book", methods=['GET', 'POST'])
 def book_appointment():
     if session.get('role') != 'patient':
         return redirect(url_for('login'))
     
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        doctor_id = request.form.get('doctor_id')
+        appointment_date = request.form.get('appointment_date')
+        reason = request.form.get('reason')
+        patient_id = session.get('user_id')
+
+        cursor.execute(
+            "INSERT INTO appointments (patient_id, doctor_id, appointment_date, reason, status) VALUES (%s, %s, %s, %s, 'Pending')",
+            (patient_id, doctor_id, appointment_date, reason)
+        )
+        db.commit()
+        cursor.close()
+        return redirect(url_for('my_appointments'))
+
     doctor_id = request.args.get('doctor_id')
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
     
     if doctor_id:
         cursor.execute("SELECT doctor_id, name, specialization FROM doctors WHERE doctor_id = %s", (doctor_id,))
@@ -258,7 +272,6 @@ def book_appointment():
         doctor = doctors[0] if doctors else None
 
     cursor.close()
-    conn.close()
     
     return render_template("book_appointment.html", doctor=doctor, doctors=doctors, selected_doctor_id=doctor_id)
 
