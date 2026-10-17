@@ -257,24 +257,23 @@ def book_appointment():
         )
         db.commit()
         cursor.close()
-        return redirect(url_for('my_appointments'))
+        return redirect(url_for('dashboard'))
 
     doctor_id = request.args.get('doctor_id')
     
     if doctor_id:
-        cursor.execute("SELECT doctor_id, name, specialization FROM doctors WHERE doctor_id = %s", (doctor_id,))
+        cursor.execute("SELECT * FROM doctors WHERE doctor_id = %s", (doctor_id,))
         doctor = cursor.fetchone()
-        cursor.execute("SELECT doctor_id, name, specialization FROM doctors")
+        cursor.execute("SELECT * FROM doctors")
         doctors = cursor.fetchall()
     else:
-        cursor.execute("SELECT doctor_id, name, specialization FROM doctors")
+        cursor.execute("SELECT * FROM doctors")
         doctors = cursor.fetchall()
         doctor = doctors[0] if doctors else None
 
     cursor.close()
     
     return render_template("book_appointment.html", doctor=doctor, doctors=doctors, selected_doctor_id=doctor_id)
-
 
 @app.post("/appointments/<int:appointment_id>/cancel")
 @role_required("patient")
