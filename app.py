@@ -771,7 +771,14 @@ def debug_schema():
     finally:
         cursor.close()
         db.close()
-    return out    
+    return out
+@app.route("/check_columns")
+def check_columns():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SHOW COLUMNS FROM users")
+    cols = cursor.fetchall()
+    return str(cols)        
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5000))
