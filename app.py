@@ -237,68 +237,30 @@ WHERE p.user_id = %s
         db.close()
 
 
-@app.route("/appointments/book", methods=["GET", "POST"])
-@role_required("patient")
+@app.route("/appointments/book")
 def book_appointment():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-    try:
-        cursor.execute(
-            "SELECT doctor_id, name, specialization FROM doctors WHERE status = 'Active'"
-        )
-        doctors_rows = cursor.fetchall()
+    if session.get('role') != 'patient':
+        return redirect(url_for('login'))
+    
+    doctor_id = request.args.get('doctor_id')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    if doctor_id:
+        cursor.execute("SELECT doctor_id, name, specialization FROM doctors WHERE doctor_id = %s", (doctor_id,))
+        doctor = cursor.fetchone()
+        cursor.execute("SELECT doctor_id, name, specialization FROM doctors")
+        doctors = cursor.fetchall()
+    else:
+        cursor.execute("SELECT doctor_id, name, specialization FROM doctors")
+        doctors = cursor.fetchall()
+        doctor = doctors[0] if doctors else None
 
-        if request.method == "POST":
-            doctor_id = request.form.get("doctor_id", "").strip()
-            appointment_date = request.form.get("appointment_date", "").strip()
-            appointment_time = request.form.get("appointment_time", "").strip()
-            reason = request.form.get("reason", "").strip()
-
-            if not doctor_id or not appointment_date or not appointment_time:
-                flash("Doctor, date and time are required.", "danger")
-                return render_template("patient/book_appointment.html", doctors=doctors_rows)
-
-            try:
-                chosen_date = datetime.strptime(appointment_date, "%Y-%m-%d").date()
-                if chosen_date < datetime.now().date():
-                    flash("Appointment date cannot be in the past.", "danger")
-                    return render_template("patient/book_appointment.html", doctors=doctors_rows)
-            except ValueError:
-                flash("Invalid date format.", "danger")
-                return render_template("patient/book_appointment.html", doctors=doctors_rows)
-
-            try:
-                cursor.execute("SELECT patient_id FROM patients WHERE user_id = %s", (session["user_id"],))
-                prow = cursor.fetchone()
-                if prow:
-                    real_patient_id = prow['patient_id'] if isinstance(prow, dict) else prow[0]
-                else:
-                    real_patient_id = session["user_id"]
-
-                cursor.execute(
-                    """INSERT INTO appointments
-                       (patient_id, doctor_id, appointment_date, appointment_time, reason, status)
-                       VALUES (%s, %s, %s, %s, %s, 'Pending')""",
-                    (real_patient_id, doctor_id, appointment_date, appointment_time, reason)
-                )
-                db.commit()
-                print(f"---SMS SENT to phone in users table: Appointment {appointment_date} {appointment_time} for patient_id {real_patient_id}---")
-                flash("Appointment booked successfully. Sms notification has been logged!", "success")
-                return redirect(url_for("patient_dashboard"))
-            except Exception as e:
-                db.rollback()
-                flash(f"Error booking appointment: {e}", "danger")
-                return render_template("patient/book_appointment.html", doctors=doctors_rows)
-
-        return render_template("patient/book_appointment.html", doctors=doctors_rows)
-    finally:
-        cursor.close()
-        db.close()
-
-                   
-  
-
-    return render_template("patient/book_appointment.html", doctors=doctors_rows)
+    cursor.close()
+    conn.close()
+    
+    return render_template("book_appointment.html", doctor=doctor, doctors=doctors, selected_doctor_id=doctor_id)
 
 
 @app.post("/appointments/<int:appointment_id>/cancel")
