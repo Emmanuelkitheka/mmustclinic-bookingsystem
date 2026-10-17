@@ -151,15 +151,18 @@ def logout():
 def doctors():
     db = get_db()
     cursor = db.cursor(dictionary=True)
+    doctor_rows = []
     try:
         try:
             cursor.execute(
-                "SELECT doctor_id, name, specialization, phone, availability, status "
-                "FROM doctors WHERE status = 'Active' ORDER BY name"
+                "SELECT d.doctor_id, u.name as name, d.specialization, "
+                "d.phone, d.availability, d.status "
+                "FROM doctors d JOIN users u ON d.user_id = u.user_id "
+                "WHERE d.status = 'Active' ORDER BY u.name"
             )
             doctor_rows = cursor.fetchall()
-        except Exception:
-            db.rollback()
+        except Exception as e1:
+            print(f"Try1 failed (u.name): {e1}")
             cursor.execute(
                 "SELECT d.doctor_id, u.full_name as name, d.specialization, "
                 "COALESCE(d.phone, u.phone) as phone, d.availability, d.status "
@@ -167,6 +170,17 @@ def doctors():
                 "WHERE d.status = 'Active' ORDER BY u.full_name"
             )
             doctor_rows = cursor.fetchall()
+    except Exception as e2:
+        print(f"Try2 failed: {e2}")
+        try:
+            cursor.execute("SELECT doctor_id, specialization, phone, availability, status FROM doctors WHERE status = 'Active'")
+            doctor_rows = cursor.fetchall()
+            for r in doctor_rows:
+                if 'name' not in r:
+                    r['name'] = f"Doctor {r['doctor_id']}"
+        except Exception as e3:
+            print(f"Fallback failed: {e3}")
+            doctor_rows = []
     finally:
         cursor.close()
         db.close()
