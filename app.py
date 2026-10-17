@@ -261,6 +261,7 @@ def book_appointment():
             "INSERT INTO appointments (patient_id, doctor_id, appointment_date, appointment_time, reason, status) VALUES (%s, %s, %s, %s, %s, 'Pending')",
             (patient_id, doctor_id, appt_date, appt_time, reason)
         )
+        )
         db.commit()
         cursor.close()
         return redirect(url_for('dashboard'))
